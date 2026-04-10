@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Проверка диплома</title>
+    <style>
+        body { font-family: Arial; background: #eef2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 12px; max-width: 600px; width: 100%; }
+        input, button { padding: 8px; margin: 5px; width: 100%; }
+        button { background: #1e6f5c; color: white; border: none; cursor: pointer; }
+        .result { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 15px; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Проверка диплома</h2>
+    <form id="verifyForm">
+        <input type="text" id="code" placeholder="Введите код подтверждения (например, 393 8220-45626)" required>
+        <button type="submit">Проверить</button>
+    </form>
+    <div id="result"></div>
+</div>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const codeParam = urlParams.get('code');
+    if (codeParam) {
+        document.getElementById('code').value = codeParam;
+        checkCode(codeParam);
+    }
+    document.getElementById('verifyForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const code = document.getElementById('code').value;
+        checkCode(code);
+    });
+    async function checkCode(code) {
+        const res = await fetch(`/api/diplomas`);
+        if (!res.ok) { document.getElementById('result').innerHTML = '<div class="error">Сервер недоступен</div>'; return; }
+        const diplomas = await res.json();
+        const diploma = diplomas.find(d => d.unique_code === code);
+        if (diploma) {
+            document.getElementById('result').innerHTML = `
+                <div class="result">
+                    <h3>Результат проверки</h3>
+                    <p><strong>ФИО:</strong> ${diploma.full_name}</p>
+                    <p><strong>Класс:</strong> ${diploma.grade}</p>
+                    <p><strong>Учебное заведение:</strong> ${diploma.school}</p>
+                    <p><strong>Олимпиада:</strong> ${diploma.olympiad_name}</p>
+                    <p><strong>Профиль:</strong> ${diploma.profile}</p>
+                    <p><strong>Уровень:</strong> ${diploma.level}</p>
+                    <p><strong>Степень диплома:</strong> ${diploma.degree}</p>
+                    <p><strong>Код:</strong> ${diploma.unique_code}</p>
+                    <p><strong>Дата выдачи:</strong> ${new Date(diploma.created_at).toLocaleDateString()}</p>
+                    <div class="success">✅ Диплом действителен</div>
+                </div>`;
+        } else {
+            document.getElementById('result').innerHTML = `<div class="error">❌ Диплом с таким кодом не найден</div>`;
+        }
+    }
+</script>
+</body>
+</html>
