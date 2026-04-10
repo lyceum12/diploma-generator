@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Вход в админ-панель</title>
+    <style>
+        body { font-family: Arial; background: #eef2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 300px; }
+        input, button { width: 100%; padding: 8px; margin: 8px 0; }
+        button { background: #1e6f5c; color: white; border: none; cursor: pointer; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+<div class="login">
+    <h2>Вход администратора</h2>
+    <div id="error" class="error"></div>
+    <input type="text" id="username" placeholder="Логин" value="admin">
+    <input type="password" id="password" placeholder="Пароль" value="admin">
+    <button onclick="login()">Войти</button>
+    <p style="font-size:12px">По умолчанию: admin / admin</p>
+</div>
+<script>
+    async function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        if (res.ok) {
+            window.location.href = '/dashboard.html';
+        } else {
+            const data = await res.json();
+            document.getElementById('error').innerText = data.error;
+        }
+    }
+</script>
+</body>
+</html>
